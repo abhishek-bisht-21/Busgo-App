@@ -1,0 +1,137 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../../src/generated/auth-client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+/// Booking domain tables created by the Prisma 8 contract.
+model Booking {
+  bookingDate DateTime @db.Timestamptz(6)
+  createdAt   DateTime @default(now()) @db.Timestamptz(6)
+  id          Int      @id @default(autoincrement())
+  seatId      Int
+  status      String   @default("pending")
+  updatedAt   DateTime @db.Timestamptz(6)
+  userId      Int
+  Seat        Seat     @relation(fields: [seatId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  User        User     @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([bookingDate], map: "Booking_bookingDate_idx_cee20115")
+  @@index([seatId], map: "Booking_seatId_idx_3076c3cd")
+  @@index([userId], map: "Booking_userId_idx_a489d58a")
+}
+
+model Bus {
+  busNumber String   @unique
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  id        Int      @id @default(autoincrement())
+  routeId   Int
+  updatedAt DateTime @db.Timestamptz(6)
+  Route     Route    @relation(fields: [routeId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  Seat      Seat[]
+
+  @@index([routeId], map: "Bus_routeId_idx_91ae2fd6")
+}
+
+model Route {
+  createdAt   DateTime @default(now()) @db.Timestamptz(6)
+  destination String
+  id          Int      @id @default(autoincrement())
+  origin      String
+  updatedAt   DateTime @db.Timestamptz(6)
+  Bus         Bus[]
+
+  @@unique([origin, destination])
+}
+
+model Seat {
+  busId      Int
+  createdAt  DateTime  @default(now()) @db.Timestamptz(6)
+  id         Int       @id @default(autoincrement())
+  isBooked   Boolean   @default(false)
+  seatNumber String
+  updatedAt  DateTime  @db.Timestamptz(6)
+  Booking    Booking[]
+  Bus        Bus       @relation(fields: [busId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@unique([busId, seatNumber])
+  @@index([busId], map: "Seat_busId_idx_00d1f177")
+}
+
+model User {
+  createdAt     DateTime  @default(now()) @db.Timestamptz(6)
+  email         String    @unique
+  emailVerified Boolean   @default(false)
+  id            Int       @id @default(autoincrement())
+  loginId       String    @unique
+  name          String
+  password      String
+  updatedAt     DateTime  @db.Timestamptz(6)
+  Booking       Booking[]
+}
+
+/// Better Auth tables. Kept separate from the booking User model.
+model AuthUser {
+  id            String        @id
+  name          String
+  email         String        @unique
+  emailVerified Boolean       @default(false)
+  image         String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  sessions      AuthSession[]
+  accounts      AuthAccount[]
+
+  @@map("auth_user")
+}
+
+model AuthSession {
+  id        String   @id
+  expiresAt DateTime
+  token     String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      AuthUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("auth_session")
+}
+
+model AuthAccount {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  AuthUser  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([userId])
+  @@map("auth_account")
+}
+
+model AuthVerification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+  @@map("auth_verification")
+}

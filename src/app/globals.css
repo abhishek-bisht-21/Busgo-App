@@ -1,8 +1,13 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #fff4ec;
+  --foreground: #2a1214;
+  --bus-red: #c81d25;
+  --bus-red-deep: #8e1018;
+  --bus-cream: #fff8f3;
+  --bus-ink: #2a1214;
+  --bus-gold: #e8a838;
 }
 
 @theme inline {
@@ -12,15 +17,54 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+body {
+  background:
+    radial-gradient(circle at 12% -10%, rgba(200, 29, 37, 0.16), transparent 32%),
+    linear-gradient(180deg, #fff8f3 0%, #fff4ec 48%, #f8e7dc 100%);
+  color: var(--foreground);
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+}
+
+@keyframes bus-drive {
+  0% {
+    transform: translateX(-30%);
+  }
+  100% {
+    transform: translateX(130%);
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes seat-pop {
+  0% {
+    transform: scale(0.92);
+  }
+  60% {
+    transform: scale(1.06);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.bus-drive {
+  animation: bus-drive 9s linear infinite;
+}
+
+.rise-in {
+  animation: rise-in 0.55s ease both;
+}
+
+.seat-pop {
+  animation: seat-pop 0.28s ease;
 }
