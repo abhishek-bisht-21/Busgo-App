@@ -1,5 +1,5 @@
 import { BusSearch } from "@/components/bus-search";
 
-export default function Home() {
+export default function SearchPage() {
   return <BusSearch />;
 }
